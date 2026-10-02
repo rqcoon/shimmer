@@ -1,0 +1,5 @@
+module github.com/rqcoon/shimmer
+
+go 1.24.5
+
+require github.com/goccy/go-yaml v1.19.2
