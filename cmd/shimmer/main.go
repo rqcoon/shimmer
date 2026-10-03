@@ -20,12 +20,13 @@ import (
 func main() {
 	sourcedir := flag.String("dir", "./page", "Source directory for .md files")
 	port := flag.String("port", "8080", "HTTP server port")
+	templdir := flag.String("template", "./template", "Source directory for HTML templates")
 	flag.Parse()
 
 	c := cache.New()
 	r := renderer.New(*sourcedir)
 
-	injector, err := injector.New()
+	injector, err := injector.New(*templdir)
 	if err != nil {
 		log.Fatalf("failed to create injector: %v", err)
 	}

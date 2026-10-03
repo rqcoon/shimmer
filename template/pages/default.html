@@ -1,0 +1,28 @@
+{{ define "default" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>{{ .Title }}</title>
+
+	{{ if .Description }}
+	<meta
+		name="description"
+		content="{{ .Description }}"
+	>
+	{{ end }}
+</head>
+
+<body>
+
+	{{ template "navbar" . }}
+
+	{{ template "content" . }}
+
+	{{ template "footer" . }}
+
+</body>
+</html>
+{{ end }}

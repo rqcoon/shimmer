@@ -1,65 +1,94 @@
 package injector
 
 import (
+	"bytes"
+	"fmt"
 	"html/template"
-	"strings"
+	"path/filepath"
 
 	"github.com/rqcoon/shimmer/renderer"
 )
 
-// TODO: import page template from (custom?) file
-const pageTemplate = `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+type RenderTarget string
 
-	<title>{{ .Title }}</title>
-
-	{{ if .Description }}
-	<meta name="description" content="{{ .Description }}">
-	{{ end }}
-</head>
-
-<body>
-
-	<main>
-		{{ .Content }}
-	</main>
-
-</body>
-</html>`
+const (
+	TargetPage    RenderTarget = "default.html"
+	TargetContent RenderTarget = "content.html"
+)
 
 type Injector struct {
 	template *template.Template
+	root     string
 }
 
-func New() (*Injector, error) {
-	tmpl, err := template.New("Page").Parse(pageTemplate)
+type TemplateData struct {
+	Title       string
+	Description string
+	Date        string
+	Tags        []string
+	Content     template.HTML
+}
+
+func New(root string) (*Injector, error) {
+	templates := template.New("shimmer")
+
+	pageFiles, err := filepath.Glob(
+		filepath.Join(root, "pages", "*.html"),
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("finding page templates: %w", err)
+	}
+
+	if len(pageFiles) == 0 {
+		return nil, fmt.Errorf(
+			"no page templates found in %s",
+			filepath.Join(root, "pages"),
+		)
+	}
+
+	templates, err = templates.ParseFiles(pageFiles...)
+	if err != nil {
+		return nil, fmt.Errorf("parsing page templates: %w", err)
+	}
+
+	fragmentFiles, err := filepath.Glob(
+		filepath.Join(root, "fragments", "*.html"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("finding template fragments: %w", err)
+	}
+
+	if len(fragmentFiles) > 0 {
+		templates, err = templates.ParseFiles(fragmentFiles...)
+		if err != nil {
+			return nil, fmt.Errorf("parsing template fragments: %w", err)
+		}
 	}
 
 	return &Injector{
-		template: tmpl,
+		template: templates,
+		root:     root,
 	}, nil
 }
 
-func (i *Injector) FMInjector(page renderer.Page) (string, error) {
-	data := struct {
-		Title       string
-		Description string
-		Content     template.HTML
-	}{
+func (i *Injector) Root() string {
+	return i.root
+}
+
+// stub
+func (i *Injector) Inject(page renderer.Page, target RenderTarget) (string, error) {
+	data := TemplateData{
 		Title:       page.FM.Title,
 		Description: page.FM.Description,
+		Date:        page.FM.Date,
+		Tags:        page.FM.Tags,
 		Content:     template.HTML(page.HTML),
 	}
 
-	var output strings.Builder
+	var output bytes.Buffer
 
-	if err := i.template.Execute(&output, data); err != nil {
-		return "", err
+	if err := i.template.ExecuteTemplate(&output, string(target), data); err != nil {
+		return "", fmt.Errorf("rendering template %q: %w", target, err)
 	}
 
 	return output.String(), nil

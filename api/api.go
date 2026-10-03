@@ -99,7 +99,7 @@ func (s *Server) compilePage(slug string) error {
 		return err
 	}
 
-	html, err := s.injector.FMInjector(rendered)
+	html, err := s.injector.Inject(rendered, injector.TargetPage)
 	if err != nil {
 		return err
 	}
