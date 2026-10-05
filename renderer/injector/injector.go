@@ -12,8 +12,8 @@ import (
 type RenderTarget string
 
 const (
-	TargetPage    RenderTarget = "default.html"
-	TargetContent RenderTarget = "content.html"
+	TargetPage    RenderTarget = "default"
+	TargetContent RenderTarget = "content"
 )
 
 type Injector struct {
@@ -59,8 +59,7 @@ func New(root string) (*Injector, error) {
 	}
 
 	if len(fragmentFiles) > 0 {
-		templates, err = templates.ParseFiles(fragmentFiles...)
-		if err != nil {
+		if _, err := templates.ParseFiles(fragmentFiles...); err != nil {
 			return nil, fmt.Errorf("parsing template fragments: %w", err)
 		}
 	}
