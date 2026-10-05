@@ -2,7 +2,6 @@
 
 Lightweight file-based CMS written in Go. Pages are written in markdown and rendered on server-side.
 
----
 ## Usage
 
 Clone the repository and compile using Go 1.24+. Shimmer exists as a standalone binary for now, docker integrations are planned for future releases.
@@ -16,7 +15,6 @@ File names determine the slug, e.g.
 - `./page/hello.md` -> `/page/hello`
 - `./page/abc/xyz.md` -> `/page/abc/xyz`
 
----
 ## Features
 - Markdown compiler
 - YAML frontmatter
