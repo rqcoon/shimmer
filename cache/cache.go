@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"maps"
 	"sync"
 )
 
@@ -48,4 +49,15 @@ func (c *Cache) Delete(slug string) {
 	defer c.mu.Unlock()
 
 	delete(c.pages, slug)
+}
+
+func (c *Cache) List() map[string]Page {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	pages := make(map[string]Page, len(c.pages))
+
+	maps.Copy(pages, c.pages)
+
+	return pages
 }

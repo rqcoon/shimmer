@@ -1,10 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -13,6 +15,13 @@ import (
 	"github.com/rqcoon/shimmer/renderer/injector"
 	"github.com/rqcoon/shimmer/watcher"
 )
+
+type MDIndexEntry struct {
+	Slug string   `json:"slug"`
+	Name string   `json:"name"`
+	Date string   `json:"date,omitempty"`
+	Tags []string `json:"tags,omitempty"`
+}
 
 type Server struct {
 	mux      *http.ServeMux
@@ -173,8 +182,34 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "OK")
 }
 
+// does not check for empty metadata yay
+func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
+	pages := s.cache.List()
+	index := make([]MDIndexEntry, 0, len(pages))
+
+	for slug, page := range pages {
+		index = append(index, MDIndexEntry{
+			Slug: slug,
+			Name: page.Metadata.Title,
+			Date: page.Metadata.Date,
+			Tags: page.Metadata.Tags,
+		})
+	}
+
+	sort.Slice(index, func(i, j int) bool {
+		return index[i].Slug < index[j].Slug
+	})
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	if err := json.NewEncoder(w).Encode(index); err != nil {
+		fmt.Printf("Failed to encode page index: %v\n", err)
+	}
+}
+
 func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/health", s.healthHandler)
+	s.mux.HandleFunc("/index", s.indexHandler)
 	s.mux.HandleFunc("GET /page/{slug}", s.handlePage)
 }
 
