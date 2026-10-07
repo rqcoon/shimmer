@@ -14,12 +14,11 @@ go build -o shimmer .
 ```
 
 **flags**
-
-`-dir`      | Markdown content directory | default: `./page`
-
-`-port`     | Port to listen on          | default: `8080`
-
-`-template` | Templates directory        | default: `./templates`
+| Flag | Description | Default |
+| ----- | -------------------------- | ------- |
+|`-dir` | Markdown content directory | `./page`|
+|`-port` | Port to listen on | `8080`|
+|`-template` | Templates directory | `./templates`|
 
 **http endpoints**
 
