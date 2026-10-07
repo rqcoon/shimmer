@@ -4,16 +4,35 @@ Lightweight file-based CMS written in Go. Pages are written in markdown and rend
 
 ## Usage
 
-Clone the repository and compile using Go 1.24+. Shimmer exists as a standalone binary for now, docker integrations are planned for future releases.
+Shimmer can be used as either a library or a standalone binary.
 
-Flags:
-- `-dir`: markdown content directory (default `./page`)
-- `-port`: specified port to listen on (default `:8080`)
-- `-template`: directory containing template(s)
+**building standalone**
 
-File names determine the slug, e.g. 
-- `./page/hello.md` -> `/page/hello`
-- `./page/abc/xyz.md` -> `/page/abc/xyz`
+```
+go build -o shimmer .
+./shimmer
+```
+
+**flags**
+
+`-dir`      | Markdown content directory | default: `./page`
+`-port`     | Port to listen on          | default: `8080`
+`-template` | Templates directory        | default: `./templates`
+
+**http endpoints**
+
+Compiled pages can be requested with: `GET /page/{slug}`
+
+Named template fragments can be requested with `frag` as a query: `GET /page/{slug}?frag=content`
+
+The page index can be found at: `GET /index`
+
+And a basic health endpoint exists at `/health`
+
+**library**
+
+The standalone binary is only a thin wrapper around the Shimmer library. A Go application can embed Shimmer directly and use its renderer, cache, templates, and HTTP handler alongside its own application routes.
+
 
 ## Features
 - Markdown compiler
