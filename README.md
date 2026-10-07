@@ -16,7 +16,9 @@ go build -o shimmer .
 **flags**
 
 `-dir`      | Markdown content directory | default: `./page`
+
 `-port`     | Port to listen on          | default: `8080`
+
 `-template` | Templates directory        | default: `./templates`
 
 **http endpoints**
