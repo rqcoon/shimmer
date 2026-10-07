@@ -11,11 +11,6 @@ import (
 
 type RenderTarget string
 
-const (
-	TargetPage    RenderTarget = "default"
-	TargetContent RenderTarget = "content"
-)
-
 type Injector struct {
 	template *template.Template
 	root     string
@@ -76,6 +71,15 @@ func (i *Injector) Root() string {
 
 // stub
 func (i *Injector) Inject(page renderer.Page, target RenderTarget) (string, error) {
+	tmpl := i.template.Lookup(string(target))
+
+	if tmpl == nil {
+		return "", fmt.Errorf(
+			"template target %q not found",
+			target,
+		)
+	}
+
 	data := TemplateData{
 		Title:       page.FM.Title,
 		Description: page.FM.Description,

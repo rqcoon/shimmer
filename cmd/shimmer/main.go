@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -11,64 +10,56 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rqcoon/shimmer/api"
-	"github.com/rqcoon/shimmer/cache"
-	"github.com/rqcoon/shimmer/renderer"
-	"github.com/rqcoon/shimmer/renderer/injector"
+	"github.com/rqcoon/shimmer"
 )
 
 func main() {
-	sourcedir := flag.String("dir", "./page", "Source directory for .md files")
+	contentDir := flag.String("dir", "./page", "Source directory for Markdown files")
+	templateDir := flag.String("templates", "./templates", "Template directory")
 	port := flag.String("port", "8080", "HTTP server port")
-	templdir := flag.String("template", "./template", "Source directory for HTML templates")
+
 	flag.Parse()
 
-	c := cache.New()
-	r := renderer.New(*sourcedir)
+	s, err := shimmer.New(shimmer.Config{
+		ContentDir:  *contentDir,
+		TemplateDir: *templateDir,
+		WatchRate:   500 * time.Millisecond,
+	})
 
-	injector, err := injector.New(*templdir)
 	if err != nil {
-		log.Fatalf("failed to create injector: %v", err)
+		log.Fatal(err)
 	}
 
-	server := api.NewServer(c, r, injector)
-
-	if err := server.Start(); err != nil {
-		log.Fatalf("failed to create server: %v", err)
+	if err := s.Start(); err != nil {
+		log.Fatal(err)
 	}
 
-	addr := ":" + *port
-	httpServer := &http.Server{
-		Addr:    addr,
-		Handler: server,
+	server := &http.Server{
+		Addr:    ":" + *port,
+		Handler: s.Handler(),
 	}
 
 	go func() {
-		log.Printf("shimmer listening on %s\n", addr)
+		log.Printf("shimmer listening on %s", server.Addr)
 
-		if err := httpServer.ListenAndServe(); err != nil &&
-			!errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("HTTP server error: %v", err)
+		if err := server.ListenAndServe(); err != nil &&
+			err != http.ErrServerClosed {
+			log.Fatal(err)
 		}
 	}()
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
 	<-signals
 
-	log.Printf("caught signal interrupt\n")
-	server.Stop()
+	log.Println("shutting down shimmer")
 
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		5*time.Second,
-	)
+	s.Stop()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := httpServer.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("HTTP shutdown error: %v", err)
 	}
-
-	log.Println("shimmer stopped")
 }
