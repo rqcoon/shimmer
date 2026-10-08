@@ -40,5 +40,5 @@ The standalone binary is only a thin wrapper around the Shimmer library. A Go ap
 - YAML frontmatter
 - Page caching
 - File watcher
-- Backend rendering (partial hydration for better frontend integration is WIP!)
+- Backend renderer (Support for page fragmentation via templates)
 - HTML template injection
