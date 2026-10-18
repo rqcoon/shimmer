@@ -2,7 +2,7 @@ package markdown
 
 func isSpecial(r rune) bool {
 	switch r {
-	case '#', '*', '`', '[', '\n':
+	case '#', '*', '`', '[', '\n', '!':
 		return true
 	default:
 		return false
@@ -65,6 +65,8 @@ func (l *Lexer) nextTokens() []Token {
 		return l.lexCode()
 	case '[':
 		return l.lexLink()
+	case '!':
+		return l.lexImage()
 	case '\n':
 		return l.lexNewline()
 	default:
@@ -230,6 +232,59 @@ func (l *Lexer) lexLink() []Token {
 
 	l.buffer.Append(Token{
 		Type: TokenLinkEnd,
+	})
+
+	return l.buffer.Commit()
+}
+
+// todo: this could be refactored?
+func (l *Lexer) lexImage() []Token {
+	startPos := l.pos
+	l.pos++ // consume '!'
+
+	if l.pos >= len(l.source) || l.source[l.pos] != '[' { // atomize this if pattern, I keep writing it!
+		return l.rejectSpeculation(startPos)
+	}
+
+	l.pos++ //consume '['
+
+	l.buffer.Append(Token{
+		Type:  TokenImageStart,
+		Value: "![",
+	})
+
+	alt, found := l.lexUntil(']')
+	if !found {
+		return l.rejectSpeculation(startPos)
+	}
+
+	l.buffer.Append(Token{
+		Type:  TokenImageAlt,
+		Value: alt,
+	})
+
+	l.pos++ // consume ']'
+
+	if l.pos >= len(l.source) || l.source[l.pos] != '(' {
+		return l.rejectSpeculation(startPos)
+	}
+
+	l.pos++ // consume ')
+
+	url, found := l.lexUntil(')')
+	if !found {
+		return l.rejectSpeculation(startPos)
+	}
+
+	l.buffer.Append(Token{
+		Type:  TokenImageURL,
+		Value: url,
+	})
+
+	l.pos++ // consume ')'
+
+	l.buffer.Append(Token{
+		Type: TokenImageEnd,
 	})
 
 	return l.buffer.Commit()

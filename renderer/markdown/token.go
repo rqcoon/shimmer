@@ -25,6 +25,11 @@ const (
 	TokenLinkText
 	TokenLinkEnd
 	TokenLinkURL
+
+	TokenImageStart
+	TokenImageAlt
+	TokenImageURL
+	TokenImageEnd
 )
 
 type Token struct {

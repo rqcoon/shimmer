@@ -23,18 +23,21 @@ type Server struct {
 	cache    *cache.Cache
 	renderer *renderer.Renderer
 	injector *injector.Injector
+	assetDir string
 }
 
 func NewServer(
 	cache *cache.Cache,
 	renderer *renderer.Renderer,
 	injector *injector.Injector,
+	assetDir string,
 ) *Server {
 	s := &Server{
 		mux:      http.NewServeMux(),
 		cache:    cache,
 		renderer: renderer,
 		injector: injector,
+		assetDir: assetDir,
 	}
 
 	s.registerRoutes()
@@ -75,6 +78,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/health", s.healthHandler)
 	s.mux.HandleFunc("/index", s.indexHandler)
 	s.mux.HandleFunc("GET /page/{slug}", s.handlePage)
+
+	fileServer := http.FileServer(http.Dir(s.assetDir))
+	s.mux.Handle("GET /assets/", http.StripPrefix("/assets/", fileServer))
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

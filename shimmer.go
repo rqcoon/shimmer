@@ -18,6 +18,7 @@ import (
 type Config struct {
 	ContentDir  string
 	TemplateDir string
+	AssetDir    string
 	WatchRate   time.Duration
 }
 
@@ -28,6 +29,8 @@ type Shimmer struct {
 	watcher  *watcher.Watcher
 }
 
+var assetDir string // lmfao
+
 func New(config Config) (*Shimmer, error) {
 	if config.ContentDir == "" {
 		return nil, fmt.Errorf("content directory is required")
@@ -36,6 +39,12 @@ func New(config Config) (*Shimmer, error) {
 	if config.TemplateDir == "" {
 		return nil, fmt.Errorf("template directory is required")
 	}
+
+	if config.AssetDir == "" {
+		return nil, fmt.Errorf("asset directory is required (if you have no images, just make an empty directory)")
+	}
+
+	assetDir = config.AssetDir
 
 	if config.WatchRate == 0 {
 		config.WatchRate = 500 * time.Millisecond
@@ -85,6 +94,7 @@ func (s *Shimmer) Handler() http.Handler {
 		s.cache,
 		s.renderer,
 		s.injector,
+		assetDir,
 	)
 }
 

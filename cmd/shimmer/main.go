@@ -16,6 +16,7 @@ import (
 func main() {
 	contentDir := flag.String("dir", "./page", "Source directory for Markdown files")
 	templateDir := flag.String("templates", "./templates", "Template directory")
+	assetDir := flag.String("assets", "./assets", "Asset storage")
 	port := flag.String("port", "8080", "HTTP server port")
 
 	flag.Parse()
@@ -23,6 +24,7 @@ func main() {
 	s, err := shimmer.New(shimmer.Config{
 		ContentDir:  *contentDir,
 		TemplateDir: *templateDir,
+		AssetDir:    *assetDir,
 		WatchRate:   500 * time.Millisecond,
 	})
 

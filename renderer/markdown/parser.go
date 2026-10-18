@@ -141,6 +141,9 @@ func (p *Parser) parseInline() Inline {
 	case TokenLinkStart:
 		return p.parseLink()
 
+	case TokenImageStart:
+		return p.parseImage()
+
 	default:
 		p.pos++
 		return nil
@@ -224,5 +227,31 @@ func (p *Parser) parseLink() Inline {
 	return LinkNode{
 		URL:  url,
 		Text: children,
+	}
+}
+
+func (p *Parser) parseImage() Inline {
+	p.pos++
+
+	var alt []Inline
+	var url string
+
+	if p.pos < len(p.tokens) && p.tokens[p.pos].Type == TokenImageAlt {
+		alt = append(alt, TextNode{Value: p.tokens[p.pos].Value})
+		p.pos++
+	}
+
+	if p.pos < len(p.tokens) && p.tokens[p.pos].Type == TokenImageURL {
+		url = p.tokens[p.pos].Value
+		p.pos++
+	}
+
+	if p.pos < len(p.tokens) && p.tokens[p.pos].Type == TokenImageEnd {
+		p.pos++
+	}
+
+	return ImageNode{
+		AltText: alt,
+		URL:     url,
 	}
 }

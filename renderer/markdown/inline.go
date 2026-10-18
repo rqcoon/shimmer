@@ -38,3 +38,10 @@ type LinkNode struct {
 }
 
 func (LinkNode) inline() {}
+
+type ImageNode struct {
+	AltText []Inline
+	URL     string
+}
+
+func (ImageNode) inline() {}

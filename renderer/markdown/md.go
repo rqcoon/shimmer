@@ -1,6 +1,7 @@
 package markdown
 
 import (
+	"html"
 	"strings"
 )
 
@@ -83,6 +84,24 @@ func (r *MDRenderer) renderInline(output *strings.Builder, inline Inline) {
 		output.WriteString("<code>")
 		output.WriteString(node.Value)
 		output.WriteString("</code>")
+	case ImageNode:
+		var alt strings.Builder
+		for _, child := range node.AltText {
+			if text, ok := child.(TextNode); ok {
+				alt.WriteString(text.Value)
+			}
+		}
+
+		src := resolveImageURL(node.URL)
+		if src == "" {
+			return
+		}
+		output.WriteString(`<img src="`)
+		output.WriteString(html.EscapeString(src))
+		output.WriteString(`" alt="`)
+		output.WriteString(html.EscapeString(alt.String()))
+		output.WriteString(`">`)
+
 	default:
 		output.WriteString("<!-- md.go: Unknown inline type -->")
 	}

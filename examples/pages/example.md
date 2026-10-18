@@ -14,3 +14,5 @@ tags: ["Example", "Shimmer"]
 `Inline Code`
 
 [Hyperlink](http://localhost:8080/hello)
+
+![Image](example.png)
