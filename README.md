@@ -19,10 +19,13 @@ go build -o shimmer .
 |`-dir` | Markdown content directory | `./page`|
 |`-port` | Port to listen on | `8080`|
 |`-template` | Templates directory | `./templates`|
+|`-assets` | Asset directory | `./assets` |
 
 **http endpoints**
 
 Compiled pages can be requested with: `GET /page/{slug}`
+
+A basic file server exists for assets at `GET /assets/`
 
 Named template fragments can be requested with `frag` as a query: `GET /page/{slug}?frag=content`
 
